@@ -253,5 +253,41 @@ namespace OrangeJetpack.Localization
 
             return Set(item, property, localizedContents);
         }
+
+        /// <summary>
+        /// Sets an item's localized content property for a specific language,
+        /// Usefull to do updates on objects.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="item">An ILocalizable item.</param>
+        /// <param name="property">The property to set.</param>
+        /// <param name="lang">The language to set the content.</param>
+        /// <param name="value">The value to set the content to.</param>
+        /// <returns></returns>
+        public static T Set<T>(this T item, Expression<Func<T, string>> property, string lang, string value) where T : class, ILocalizable
+        {
+            var memberExpression = (MemberExpression)property.Body;
+            var propertyInfo = (PropertyInfo)memberExpression.Member;
+            
+            var itemValue = propertyInfo.GetValue(item);
+            var content = 
+                new List<LocalizedContent>(
+                    LocalizedContent.Deserialize(itemValue != null ? itemValue as string : LocalizedContent.Init()));                
+
+            LocalizedContent update = content.FirstOrDefault(p => p.Key.Equals(lang));
+
+            if (update != null)
+            {
+                update.Value = value;
+            }
+            else
+            {
+                content.Add(new LocalizedContent(lang, value));
+            }
+
+            propertyInfo.SetValue(item, content.Serialize(), null);
+
+            return item;
+        }
     }
 }
