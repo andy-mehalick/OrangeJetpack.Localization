@@ -268,8 +268,11 @@ namespace OrangeJetpack.Localization
         {
             var memberExpression = (MemberExpression)property.Body;
             var propertyInfo = (PropertyInfo)memberExpression.Member;
-
-            var content = new List<LocalizedContent>(LocalizedContent.Deserialize(propertyInfo.GetValue(item) as string));
+            
+            var itemValue = propertyInfo.GetValue(item);
+            var content = 
+                new List<LocalizedContent>(
+                    LocalizedContent.Deserialize(itemValue != null ? itemValue as string : LocalizedContent.Init()));                
 
             LocalizedContent update = content.FirstOrDefault(p => p.Key.Equals(lang));
 
